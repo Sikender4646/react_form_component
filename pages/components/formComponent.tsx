@@ -15,8 +15,8 @@ interface FormPageProps {
     submitHandler: (event: any) => void
 }
 
-const generateFormData = (formData: string[] | FormField[]) => {
-    return formData.map(field => {
+const generateFormData = (formData: string[] | FormField[] = []) => {
+    return formData.map((field: string | FormField) => {
         if (typeof field === 'string') {
             return {
                 name: field,
