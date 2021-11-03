@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import Form from './components/formComponent'
 import Modal from './components/modal'
 import { Typography } from '@material-ui/core';
+import Loader from "react-loader-spinner";
 
 const LenderNamePage: NextPage = () => {
   const router = useRouter();
@@ -14,6 +15,7 @@ const LenderNamePage: NextPage = () => {
   const [showModal, setShowModal] = useState(false)
   const [modalMessage, setModalMessage] = useState('')
   const [formSubmissionComplete, setFormSubmissionComplete] = useState(false)
+  const [showLoader, setShowLoader] = useState(false)
 
   const onChangeHandler = (fieldId: string, value: string | boolean) => {
     setUserInputData(currentData => {
@@ -23,11 +25,14 @@ const LenderNamePage: NextPage = () => {
   }
 
   useEffect(() => {
+    setFormData([])
     const getData = async () => {
+      setShowLoader(true)
       const res = await (await fetch(`/api/lenders/${lenderSlug}`)).json()
       if (res) {
         setFormData(res.fields)
       }
+      setShowLoader(false)
     }
 
     lenderSlug && getData()
@@ -35,6 +40,7 @@ const LenderNamePage: NextPage = () => {
 
   const onSubmit = async (event: { preventDefault: any; }) => {
     event.preventDefault()
+    setShowLoader(true)
     setFormSubmissionComplete(false)
     setShowModal(false)
     const request = {
@@ -46,10 +52,11 @@ const LenderNamePage: NextPage = () => {
     if (res.decision.toUpperCase() === 'DECLINED') {
       setModalMessage('Form submission failed')
     } else {
-      setModalMessage('Form submission succesful')
+      setModalMessage('Form submission succesful, redirecting to home page')
       setFormSubmissionComplete(true)
     }
     setShowModal(true)
+    setShowLoader(false)
   }
 
   const navigateToHome = () => {
@@ -65,11 +72,20 @@ const LenderNamePage: NextPage = () => {
   }}><Typography variant="h5" component="h5">
       {lenderSlug}
     </Typography>
-    <Form
-      formData={formData}
-      submitHandler={onSubmit}
-      onChangeHandler={onChangeHandler}
-      userInputData={userInputData} />
+    {!showLoader ?
+      (<Form
+        formData={formData}
+        submitHandler={onSubmit}
+        onChangeHandler={onChangeHandler}
+        userInputData={userInputData} />
+      ) :
+      (<Loader
+        type="TailSpin"
+        color="#808080"
+        height={100}
+        width={100}
+      />)}
+
     <Modal message={modalMessage} okHandler={navigateToHome} showModal={showModal} />
   </Grid>;
 };
